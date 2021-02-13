@@ -3,7 +3,6 @@
 #include <cstring>
 #include <string>
 #include <sstream>
-#include <algorithm>
 #include "ballot.hpp"
 #include "voter.hpp"
 
@@ -12,6 +11,19 @@ using namespace std;
 // Comparator function for sorting the PostalEntries, if same, return the PostalEntry with larger zipcode
 bool comparator(PostalEntry* PE_a, PostalEntry* PE_b) {
     return PE_a->number_of_voted_person == PE_b->number_of_voted_person ? PE_a->postal_code > PE_b->postal_code : PE_a->number_of_voted_person > PE_b->number_of_voted_person;
+}
+
+void insertion_sort(PostalEntry** PE_list, PostalEntry** PE_list_end) {
+    for(int i = 1; i < (PE_list_end - PE_list); i++){
+        PostalEntry* key = PE_list[i];
+        int j = i - 1;
+
+        while(j >= 0 && !comparator(PE_list[j], key)){
+            PE_list[j+1] = PE_list[j];
+            j = j - 1;
+        }
+        PE_list[j+1] = key;
+    }
 }
 
 int argumentParser(int argc, char *argv[], int& number_of_basket, string& filename) {
@@ -24,10 +36,6 @@ int argumentParser(int argc, char *argv[], int& number_of_basket, string& filena
                 number_of_basket = (int)atoi(argv[++i]);
             else if(strcmp(argv[i], "-f") == 0)
                 filename = string(argv[++i]);
-            else {
-                cout << "Invalid argument" << endl;
-                return -1;
-            }
             return 0;
     }
 }
@@ -130,7 +138,7 @@ int commandParser(Ballot* my_ballot, istream& stream) {
                         PE_list[i] = curr_PE;
                         curr_PE = curr_PE->next_entry;
                     }
-                    sort(PE_list, PE_list + number_of_postal_code, comparator);
+                    insertion_sort(PE_list, PE_list + number_of_postal_code);
                     for(int i = 0; i < number_of_postal_code; i++){
                         cout << PE_list[i]->postal_code << " " << PE_list[i]->number_of_voted_person << endl; 
                     }
